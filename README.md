@@ -9,14 +9,14 @@ It is currently in development.
 
 #### User
 
-- [ ] clock in [mask]
-    - [ ] Check if the user has the mask they're trying to use.
-    - [ ] This will set the user as clocked in for the mask that they specified.
-    - [ ] If the user is already clocked in for that role, do nothing.
-- [ ] clock out [mask]
-    - [ ] !! Do NOT check if the user has the mask they're trying to use.
-    - [ ] This will set the user as clocked out for the mask that they specified.
-    - [ ] If the user is already clocked out of this guild, do nothing.
+- [x] clock in [mask]
+    - [x] Check if the user has the mask they're trying to use.
+    - [x] This will set the user as clocked in for the mask that they specified.
+    - [x] If the user is already clocked in for that role, do nothing.
+- [x] clock out [mask]
+    - [x] !! Do NOT check if the user has the mask they're trying to use.
+    - [x] This will set the user as clocked out for the mask that they specified.
+    - [x] If the user is already clocked out of this guild, do nothing.
 
 #### Management
 

@@ -1,0 +1,141 @@
+from typing import TYPE_CHECKING, Optional, Self
+from datetime import datetime as dt, timedelta
+import uuid
+
+if TYPE_CHECKING:
+    from discord.ext import vbu
+
+
+__all__ = (
+    'ClockIn',
+)
+
+
+class ClockIn:
+
+    def __init__(
+            self,
+            id: Optional[uuid.UUID],
+            guild_id: int,
+            user_id: int,
+            mask: str,
+            clocked_in_at: dt,
+            clocked_out_at: Optional[dt] = None):
+        self._id = id
+        self.guild_id: int = guild_id
+        self.user_id: int = user_id
+        self.mask: str = mask
+        self.clocked_in_at: dt = clocked_in_at
+        self.clocked_out_at: Optional[dt] = clocked_out_at
+
+    @property
+    def id(self) -> str:
+        if self._id is None:
+            self._id = uuid.uuid4()
+        return str(self._id)
+
+    @id.setter
+    def id(self, value: uuid.UUID | str | None):
+        if isinstance(value, str):
+            value = uuid.UUID(value)
+        self._id = value
+
+    @property
+    def duration(self) -> timedelta:
+        if self.clocked_out_at:
+            return self.clocked_out_at - self.clocked_in_at
+        return dt.utcnow() - self.clocked_in_at
+
+    @classmethod
+    def from_row(cls, row: dict) -> Self:
+        return cls(
+            id=row['id'],
+            guild_id=row['guild_id'],
+            user_id=row['user_id'],
+            mask=row['mask'],
+            clocked_in_at=row['clock_in'],
+            clocked_out_at=row['clock_out'],
+        )
+
+    @classmethod
+    async def get_latest(
+            cls,
+            db: vbu.Database,
+            guild_id: int,
+            user_id: int,
+            mask: str | None) -> Optional[Self]:
+        """
+        Get the latest clock in (that has not been clocked out) for a user with
+        a given mask.
+        """
+
+        query = """
+            SELECT
+                *
+            FROM
+                clock_ins
+            WHERE
+                guild_id = $1
+            AND
+                user_id = $2
+            AND
+                mask = $3
+            AND
+                clock_out IS NULL
+            ORDER BY
+                clock_in DESC
+            LIMIT 1
+        """
+        rows = await db.call(query, guild_id, user_id, mask)
+        if not rows:
+            return None
+        return cls.from_row(rows[0])
+
+    async def update(
+            self,
+            db: vbu.Database,
+            **kwargs):
+        """
+        Update the clock in with the current values.
+        """
+
+        for i, o in kwargs.items():
+            setattr(self, i, o)
+        query = """
+            INSERT INTO
+                clock_ins
+                (
+                    id,
+                    guild_id,
+                    user_id,
+                    mask,
+                    clock_in,
+                    clock_out
+                )
+            VALUES
+                (
+                    $1,
+                    $2,
+                    $3,
+                    $4,
+                    $5,
+                    $6
+                )
+            ON CONFLICT
+                (id)
+            DO UPDATE SET
+                guild_id = excluded.guild_id,
+                user_id = excluded.user_id,
+                mask = excluded.mask,
+                clock_in = excluded.clock_in,
+                clock_out =excluded.clock_out6
+        """
+        await db.call(
+            query,
+            self.id,
+            self.guild_id,
+            self.user_id,
+            self.mask,
+            self.clocked_in_at,
+            self.clocked_out_at,
+        )
