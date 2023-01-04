@@ -116,7 +116,31 @@ class ClockIn:
                 clock_out IS NULL
             ORDER BY
                 clock_in DESC
-            LIMIT 1
+        """
+        rows = await db.call(query, guild_id, user_id)
+        return [cls.from_row(row) for row in rows]
+
+    @classmethod
+    async def get_all(
+            cls,
+            db: vbu.Database,
+            guild_id: int,
+            user_id: int) -> list[Self]:
+        """
+        Get all of the clock ins for a user.
+        """
+
+        query = """
+            SELECT
+                *
+            FROM
+                clock_ins
+            WHERE
+                guild_id = $1
+            AND
+                user_id = $2
+            ORDER BY
+                clock_in DESC
         """
         rows = await db.call(query, guild_id, user_id)
         return [cls.from_row(row) for row in rows]
