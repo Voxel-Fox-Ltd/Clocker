@@ -177,6 +177,68 @@ class UserCommands(vbu.Cog[vbu.Bot]):
             ephemeral=True,
         )
 
+    @clock_in.autocomplete
+    async def clock_in_autocomplete(
+            self,
+            ctx: utils.types.GuildSlashContext,
+            interaction: discord.AutocompleteInteraction):
+        """
+        Autocomplete for the clock in command.
+        """
+
+        # Get current clock ins for that user
+        async with vbu.Database() as db:
+            rows = await db.call(
+                """
+                SELECT
+                    mask
+                FROM
+                    clock_masks
+                WHERE
+                    guild_id = $1
+                """,
+                ctx.interaction.guild_id,
+            )
+
+        # Return the masks that they're clocked in with
+        options = [
+            discord.ApplicationCommandOptionChoice(
+                name=r['mask'],
+                value=r['mask'],
+            )
+            for r in rows
+        ]
+        await interaction.response.send_autocomplete(options)
+
+    @clock_out.autocomplete
+    async def clock_out_autocomplete(
+            self,
+            ctx: utils.types.GuildSlashContext,
+            interaction: discord.AutocompleteInteraction):
+        """
+        Autocomplete for the clock out command.
+        """
+
+        # Open a database connection
+        async with vbu.Database() as db:
+
+            # Get current clock ins for that user
+            clock_ins = await utils.ClockIn.get_current(
+                db,
+                ctx.guild.id,
+                ctx.author.id,
+            )
+
+        # Return the masks that they're clocked in with
+        options = [
+            discord.ApplicationCommandOptionChoice(
+                name=clock_in.mask,
+                value=clock_in.mask,
+            )
+            for clock_in in clock_ins
+        ]
+        await interaction.response.send_autocomplete(options)
+
 
 def setup(bot: vbu.Bot):
     x = UserCommands(bot)
