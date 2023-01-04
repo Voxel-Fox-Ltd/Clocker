@@ -69,6 +69,13 @@ class SettingsCommands(vbu.Cog[vbu.Bot]):
         Add a mask to the server.
         """
 
+        # Make sure the mask is valid
+        if not self.validate_mask_name(mask):
+            return await ctx.send(
+                "That mask name is not a valid identifier.",
+                ephemeral=True,
+            )
+
         # Add the mask to the guild
         async with vbu.Database() as db:
             try:
