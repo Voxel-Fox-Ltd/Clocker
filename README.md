@@ -43,13 +43,13 @@ It is currently in development.
 - [ ] clockother remove [user] [role] [duration]
     - [ ] Remove a duration of time from the given user.
 
-- [ ] settings masks list
-    - [ ] Show a list of masks that are currently set up
+- [x] settings masks list
+    - [x] Show a list of masks that are currently set up
     (in form role -> list[mask] mapping).
-- [ ] settings masks add [role] [mask]
-    - [ ] Add a mask to the role.
-- [ ] settings masks remove [role] [mask]
-    - [ ] Remove a mask from the role.
+- [x] settings masks add [role] [mask]
+    - [x] Add a mask to the role.
+- [x] settings masks remove [role] [mask]
+    - [x] Remove a mask from the role.
 
 ### API
 
