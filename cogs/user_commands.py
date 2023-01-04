@@ -8,29 +8,29 @@ from cogs import utils
 
 class UserCommands(vbu.Cog[vbu.Bot]):
 
+    @staticmethod
     async def get_masks_for_user(
-            self,
+            db: vbu.Database,
             user: discord.Member) -> list[str]:
         """
         Get the masks that a user can use to clock in/out with.
         """
 
         # Get the masks from the database
-        async with vbu.Database() as db:
-            masks = await db.call(
-                """
-                SELECT
-                    mask
-                FROM
-                    clock_masks
-                WHERE
-                    guild_id = $1
-                AND
-                    role_id = ANY($2::BIGINT[])
-                """,
-                user.guild.id,
-                user.role_ids,
-            )
+        masks = await db.call(
+            """
+            SELECT
+                mask
+            FROM
+                clock_masks
+            WHERE
+                guild_id = $1
+            AND
+                role_id = ANY($2::BIGINT[])
+            """,
+            user.guild.id,
+            user.role_ids,
+        )
 
         # Return the masks
         return [mask['mask'] for mask in masks]
@@ -68,11 +68,17 @@ class UserCommands(vbu.Cog[vbu.Bot]):
         Clocks in to a specific mask.
         """
 
+        # Defer because apparently this takes time :/
+        await ctx.interaction.response.defer(ephemeral=True)
+
         # Open a db connection
         async with vbu.Database() as db:
 
             # Get the masks for the user
-            allowed_masks = await self.get_masks_for_user(ctx.interaction.user)
+            allowed_masks = await self.get_masks_for_user(
+                db,
+                ctx.interaction.user,
+            )
 
             # See if they're already clocked in for that mask
             clock_in = await utils.ClockIn.get_latest(
@@ -82,14 +88,14 @@ class UserCommands(vbu.Cog[vbu.Bot]):
                 mask,
             )
             if clock_in:
-                return await ctx.interaction.response.send_message(
+                return await ctx.interaction.followup.send(
                     "You're already clocked in with that mask.",
                     ephemeral=True,
                 )
 
             # See if they're allowed to use that mask
             if mask not in allowed_masks:
-                return await ctx.interaction.response.send_message(
+                return await ctx.interaction.followup.send(
                     "You don't have permission to use that mask.",
                     ephemeral=True,
                 )
@@ -106,7 +112,7 @@ class UserCommands(vbu.Cog[vbu.Bot]):
             await clock_in.update(db)
 
         # Send a message
-        await ctx.interaction.response.send_message(
+        await ctx.interaction.followup.send(
             f"You've clocked in with the mask `{mask}`.",
             ephemeral=True,
         )
@@ -127,11 +133,15 @@ class UserCommands(vbu.Cog[vbu.Bot]):
     )
     async def clock_out(
             self,
-            ctx: vbu.SlashContext,
+            ctx: utils.types.GuildSlashContext,
             mask: str):
         """
         Clocks out of one of your clocked in masks.
         """
+
+
+        # Defer so we can have a nice loading message
+        await ctx.interaction.response.defer(ephemeral=True)
 
         # Open a database connection
         async with vbu.Database() as db:
@@ -146,7 +156,7 @@ class UserCommands(vbu.Cog[vbu.Bot]):
 
             # If not, give them an error
             if not clock_in:
-                return await ctx.interaction.response.send_message(
+                return await ctx.interaction.followup.send(
                     "You're not clocked in with that mask.",
                     ephemeral=True,
                 )
@@ -158,7 +168,7 @@ class UserCommands(vbu.Cog[vbu.Bot]):
             )
 
         # Tell them we're done
-        await ctx.interaction.response.send_message(
+        await ctx.interaction.followup.send(
             (
                 f"You've clocked out of the mask **{mask}**. Your duration "
                 f"for this session is "
