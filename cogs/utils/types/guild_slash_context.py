@@ -1,9 +1,6 @@
-from typing import TYPE_CHECKING
-
+import discord
 from discord.ext import vbu
 
-if TYPE_CHECKING:
-    import discord
 
 __all__ = (
     'GuildSlashContext',
