@@ -31,18 +31,18 @@ CREATE TABLE IF NOT EXISTS clock_ins(
     clock_in TIMESTAMP NOT NULL,
     clock_out TIMESTAMP
 );
-CREATE INDEX
+CREATE INDEX IF NOT EXISTS
     guild_id_user_id_mask_idx
-IF NOT EXISTS
-    ON clock_ins(guild_id, user_id, mask);
+ON
+    clock_ins(guild_id, user_id, mask);
 
 
 CREATE TABLE IF NOT EXISTS clock_masks(
     guild_id BIGINT NOT NULL,
     role_id BIGINT NOT NULL,
-    mask CITEXT NOT NULL
+    mask CITEXT NOT NULL UNIQUE
 );
-CREATE INDEX
+CREATE INDEX IF NOT EXISTS
     guild_id_role_id_idx
-IF NOT EXISTS
-    ON clock_masks(guild_id, role_id);
+ON
+    clock_masks(guild_id, role_id);
