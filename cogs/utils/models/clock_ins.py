@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Optional, Self
 from datetime import datetime as dt, timedelta
 import uuid
@@ -91,6 +93,34 @@ class ClockIn:
             return None
         return cls.from_row(rows[0])
 
+    @classmethod
+    async def get_current(
+            cls,
+            db: vbu.Database,
+            guild_id: int,
+            user_id: int) -> list[Self]:
+        """
+        Get the current clock ins for a user.
+        """
+
+        query = """
+            SELECT
+                *
+            FROM
+                clock_ins
+            WHERE
+                guild_id = $1
+            AND
+                user_id = $2
+            AND
+                clock_out IS NULL
+            ORDER BY
+                clock_in DESC
+            LIMIT 1
+        """
+        rows = await db.call(query, guild_id, user_id)
+        return [cls.from_row(row) for row in rows]
+
     async def update(
             self,
             db: vbu.Database,
@@ -128,7 +158,7 @@ class ClockIn:
                 user_id = excluded.user_id,
                 mask = excluded.mask,
                 clock_in = excluded.clock_in,
-                clock_out =excluded.clock_out6
+                clock_out = excluded.clock_out
         """
         await db.call(
             query,
