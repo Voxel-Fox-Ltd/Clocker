@@ -112,7 +112,7 @@ class InformationCommands(vbu.Cog[vbu.Bot]):
             self,
             ctx: commands.SlashContext,
             user: discord.Member):
-        await self.information_show.invoke(ctx, user)
+        await self.information_show(ctx, user)
 
 
 def setup(bot: vbu.Bot):
