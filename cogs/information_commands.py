@@ -105,7 +105,14 @@ class InformationCommands(vbu.Cog[vbu.Bot]):
         else:
             await ctx.interaction.followup.send("No clock ins found.")
 
-    # TODO information_show context command
+    @commands.context_command(
+        name="Get clock ins for user."
+    )
+    async def clock_in_context_command(
+            self,
+            ctx: commands.SlashContext,
+            user: discord.Member):
+        await self.information_show.invoke(ctx, user)
 
 
 def setup(bot: vbu.Bot):
