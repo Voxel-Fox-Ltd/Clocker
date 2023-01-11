@@ -145,6 +145,28 @@ class ClockIn:
         rows = await db.call(query, guild_id, user_id)
         return [cls.from_row(row) for row in rows]
 
+    @classmethod
+    async def get_all_for_guild(
+            cls,
+            db: vbu.Database,
+            guild_id: int) -> list[Self]:
+        """
+        Get all of the clock ins for a guild.
+        """
+
+        query = """
+            SELECT
+                *
+            FROM
+                clock_ins
+            WHERE
+                guild_id = $1
+            ORDER BY
+                clock_in DESC
+        """
+        rows = await db.call(query, guild_id)
+        return [cls.from_row(row) for row in rows]
+
     async def update(
             self,
             db: vbu.Database,

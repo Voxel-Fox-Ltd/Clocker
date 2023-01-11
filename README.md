@@ -25,8 +25,8 @@ It is currently in development.
 - [-] information showall [user]
     - [-] Show the user's clock in/out stats per day, including a log of when
     they clicked the button to remain clocked in.
-- [ ] information export
-    - [ ] Export information on the current guild to a CSV file. This should
+- [x] information export
+    - [x] Export information on the current guild to a CSV file. This should
     show each user (by their name and/or ID) and their total work time per day
     for a month period (past 30 days from the command run point).
 - [ ] information clear

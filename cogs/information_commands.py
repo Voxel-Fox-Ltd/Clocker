@@ -1,6 +1,9 @@
 from functools import reduce
 import itertools
-from typing import TYPE_CHECKING
+from datetime import timedelta, date
+from asyncpg.connection import collections
+import io
+import csv
 
 import discord
 from discord.ext import vbu, commands
@@ -113,6 +116,74 @@ class InformationCommands(vbu.Cog[vbu.Bot]):
             ctx: commands.SlashContext,
             user: discord.Member):
         await self.information_show(ctx, user)
+
+    @information.command(
+        name="export",
+        application_command_meta=commands.ApplicationCommandMeta(
+            guild_only=True,
+        )
+    )
+    async def information_export(self, ctx: commands.SlashContext):
+        """
+        Export all of the users from the database into a CSV file.
+        """
+
+        # Defer so we can actually do stuff
+        await ctx.interaction.response.defer()
+
+        # Get all clockins
+        assert ctx.interaction.guild_id
+        async with vbu.Database() as db:
+            all_clock_ins = await utils.ClockIn.get_all_for_guild(
+                db,
+                ctx.interaction.guild_id,
+            )
+
+        # Set up a dict to store each day's user clock in duration
+        clock_in_durations: dict[date, dict[int, timedelta]]
+        clock_in_durations = collections.defaultdict(dict)
+
+        # Group the clockins by user ID
+        for user_id, clockins in itertools.groupby(
+                all_clock_ins,
+                key=lambda i: i.user_id):
+
+            # Group the clockins by day
+            for day, clockins in itertools.groupby(
+                    clockins,
+                    key=lambda i: i.clocked_in_at.date()):
+
+                # Get the total duration for the day
+                total_duration = reduce(
+                    lambda x, y: x + y,
+                    [i.duration for i in clockins],
+                )
+
+                # Add the duration to the dict
+                clock_in_durations[day][user_id] = total_duration
+
+        # Make a CSV file
+        csv_file = io.StringIO()
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow(["Year", "Month", "Day", "User ID", "Duration"])
+        for day, user_durations in clock_in_durations.items():
+            for user_id, duration in user_durations.items():
+                csv_writer.writerow([
+                    day.year,
+                    day.month,
+                    day.day,
+                    f"{user_id}\t",
+                    duration.total_seconds(),
+                ])
+
+        # Send the file
+        csv_file.seek(0)
+        await ctx.interaction.followup.send(
+            file=discord.File(
+                csv_file,
+                filename="clockins.csv",
+            ),
+        )
 
 
 def setup(bot: vbu.Bot):
