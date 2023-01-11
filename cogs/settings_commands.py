@@ -216,6 +216,32 @@ class SettingsCommands(vbu.Cog[vbu.Bot]):
             allowed_mentions=discord.AllowedMentions.none(),
         )
 
+    @settings_masks_remove.autocomplete
+    async def settings_masks_remove_autocomplete(
+            self,
+            _,
+            interaction: discord.AutocompleteInteraction):
+        """
+        Give the user a list of masks that they can remove.
+        """
+
+        async with vbu.Database() as db:
+            rows = await db.call(
+                """
+                SELECT
+                    mask
+                FROM
+                    clock_masks
+                WHERE
+                    guild_id = $1
+                """,
+                interaction.guild_id,
+            )
+        return await interaction.response.send_autocomplete([
+            discord.ApplicationCommandOptionChoice(name=i['mask'])
+            for i in rows[:25]
+        ])
+
 
 def setup(bot: vbu.Bot) -> None:
     x = SettingsCommands(bot)

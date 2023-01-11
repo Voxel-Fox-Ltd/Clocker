@@ -139,7 +139,6 @@ class UserCommands(vbu.Cog[vbu.Bot]):
         Clocks out of one of your clocked in masks.
         """
 
-
         # Defer so we can have a nice loading message
         await ctx.interaction.response.defer(ephemeral=True)
 
