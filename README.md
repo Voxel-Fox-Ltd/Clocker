@@ -36,10 +36,10 @@ It is currently in development.
     their current activity, and log them in again for a new one of the same
     type so that no time is lost.
 
-- [ ] clockother in [user] [role]
-    - [ ] Clock the user in.
-- [ ] clockother out [user] [role]
-    - [ ] Clock the user out.
+- [x] clockother in [user] [role]
+    - [x] Clock the user in.
+- [x] clockother out [user] [role]
+    - [x] Clock the user out.
 - [ ] clockother remove [user] [role] [duration]
     - [ ] Remove a duration of time from the given user.
 
