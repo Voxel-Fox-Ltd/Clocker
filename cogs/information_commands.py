@@ -58,12 +58,13 @@ class InformationCommands(vbu.Cog[vbu.Bot]):
         all_clock_ins = [
             i
             for i in all_clock_ins
-            if i.clocked_out_at is not None
         ]
 
         # Format into an embed per mask
         embeds = []
-        for mask, clock_ins in itertools.groupby(all_clock_ins, key=lambda i: i.mask.capitalize()):
+        for mask, clock_ins in itertools.groupby(
+                all_clock_ins,
+                key=lambda i: i.mask.capitalize()):
             clock_ins = list(clock_ins)
             if not clock_ins:
                 continue
@@ -79,11 +80,16 @@ class InformationCommands(vbu.Cog[vbu.Bot]):
             field_line_list = []
             for ci in clock_ins:
                 start = discord.utils.format_dt(ci.clocked_in_at, style="f")
-                end = discord.utils.format_dt(ci.clocked_out_at, style="f")
-                field_line_list.append(
-                    f"\N{BULLET} {start} - {end} "
-                    f"(**{utils.format_timedelta(ci.duration)}**)"
-                )
+                if ci.clocked_out_at is None:
+                    field_line_list.append(
+                        f"\N{BULLET} {start} - **Currently clocked in**"
+                    )
+                else:
+                    end = discord.utils.format_dt(ci.clocked_out_at, style="f")
+                    field_line_list.append(
+                        f"\N{BULLET} {start} - {end} "
+                        f"(**{utils.format_timedelta(ci.duration)}**)"
+                    )
             embed.add_field(
                 name="Clock Ins",
                 value="\n".join(field_line_list),
@@ -91,26 +97,13 @@ class InformationCommands(vbu.Cog[vbu.Bot]):
             )
             embeds.append(embed)
 
-        # Add a total (non overlapping) time for all masks
-        # total_delta = reduce(
-        #     lambda x, y: x + y,
-        #     [i.duration for i in all_clock_ins],
-        # )
-        # embed = vbu.Embed(title="Total")
-        # embed.description = (
-        #     f"This user has a total clock in time of "
-        #     f"**{utils.format_timedelta(total_delta)}**."
-        # )
-        # embeds.append(embed)
-        # TODO ^^^^^
-
         # Send embeds
         if embeds:
             await ctx.interaction.followup.send(
                 embeds=embeds,
             )
         else:
-            ... # TODO
+            await ctx.interaction.followup.send("No clock ins found.")
 
     # TODO information_show context command
 
