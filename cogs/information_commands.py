@@ -185,6 +185,39 @@ class InformationCommands(vbu.Cog[vbu.Bot]):
             ),
         )
 
+    @information.command(
+        name="clear",
+        application_command_meta=commands.ApplicationCommandMeta(
+            guild_only=True,
+        )
+    )
+    async def information_clear(self, ctx: commands.SlashContext):
+        """
+        Clear all of the clock ins from the database.
+        """
+
+        # Defer so we can actually do stuff
+        await ctx.interaction.response.defer()
+
+        # Delete all users
+        assert ctx.interaction.guild_id
+        async with vbu.Database() as db:
+            await db.call(
+                """
+                DELETE FROM
+                    clock_ins
+                WHERE
+                    guild_id = $1
+                    AND clocked_out_at IS NOT NULL
+                """,
+                ctx.interaction.guild_id,
+            )
+
+        # Send a message
+        await ctx.interaction.followup.send(
+            "Cleared all clock ins from the database."
+        )
+
 
 def setup(bot: vbu.Bot):
     x = InformationCommands(bot)

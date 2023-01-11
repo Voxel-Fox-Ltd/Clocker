@@ -29,10 +29,10 @@ It is currently in development.
     - [x] Export information on the current guild to a CSV file. This should
     show each user (by their name and/or ID) and their total work time per day
     for a month period (past 30 days from the command run point).
-- [ ] information clear
-    - [ ] Clear all information on the current guild (mark it as deleted in
+- [x] information clear
+    - [x] Clear all information on the current guild (mark it as deleted in
     the database).
-    - [ ] If there are any users clocked in at the time, clock them out for
+    - [-] If there are any users clocked in at the time, clock them out for
     their current activity, and log them in again for a new one of the same
     type so that no time is lost.
 
