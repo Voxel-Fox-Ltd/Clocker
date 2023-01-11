@@ -20,10 +20,10 @@ It is currently in development.
 
 #### Management
 
-- [ ] information show [user]
-    - [ ] Show the user's clock in/out stats per day, including total time.
-- [ ] information showall [user]
-    - [ ] Show the user's clock in/out stats per day, including a log of when
+- [x] information show [user]
+    - [x] Show the user's clock in/out stats per day, including total time.
+- [-] information showall [user]
+    - [-] Show the user's clock in/out stats per day, including a log of when
     they clicked the button to remain clocked in.
 - [ ] information export
     - [ ] Export information on the current guild to a CSV file. This should
