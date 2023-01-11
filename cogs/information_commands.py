@@ -1,6 +1,7 @@
 from functools import reduce
 import itertools
 from datetime import timedelta, date
+from typing import Optional, cast
 from asyncpg.connection import collections
 import io
 import csv
@@ -34,7 +35,6 @@ class InformationCommands(vbu.Cog[vbu.Bot]):
                     name="user",
                     description="The user to show information about.",
                     type=discord.ApplicationCommandOptionType.user,
-                    required=True,
                 ),
             ],
         ),
@@ -42,11 +42,13 @@ class InformationCommands(vbu.Cog[vbu.Bot]):
     async def information_show(
             self,
             ctx: utils.types.GuildSlashContext,
-            user: discord.Member):
+            user: Optional[discord.Member] = None):
         """
         Shows information about a user.
         """
 
+        user = user or ctx.author  # pyright: ignore
+        user = cast(discord.Member, user)
         if ctx.interaction.guild_id is None:
             return
         await ctx.interaction.response.defer()
@@ -74,7 +76,7 @@ class InformationCommands(vbu.Cog[vbu.Bot]):
             embed = vbu.Embed(title=mask)
             total_delta = reduce(
                 lambda x, y: x + y,
-                [i.duration for i in clock_ins],
+                [i.duration_with_negative for i in clock_ins],
             )
             embed.description = (
                 f"This user has a total clock in time of "
@@ -82,17 +84,24 @@ class InformationCommands(vbu.Cog[vbu.Bot]):
             )
             field_line_list = []
             for ci in clock_ins:
-                start = discord.utils.format_dt(ci.clocked_in_at, style="f")
                 if ci.clocked_out_at is None:
                     field_line_list.append(
-                        f"\N{BULLET} {start} - **Currently clocked in**"
+                        f"\N{BULLET} {ci.clock_in_relative} - **Currently clocked in**"
                     )
                 else:
-                    end = discord.utils.format_dt(ci.clocked_out_at, style="f")
-                    field_line_list.append(
-                        f"\N{BULLET} {start} - {end} "
-                        f"(**{utils.format_timedelta(ci.duration)}**)"
-                    )
+                    if ci.managed and ci.duration.total_seconds() < 0:
+                        field_line_list.append(
+                            f"\N{BULLET} [Admin] Removed **{utils.format_timedelta(ci.duration)}**"
+                        )
+                    elif ci.managed:
+                        field_line_list.append(
+                            f"\N{BULLET} [Admin] Added **{utils.format_timedelta(ci.duration)}**"
+                        )
+                    else:
+                        field_line_list.append(
+                            f"\N{BULLET} {ci.clock_in_relative} - {ci.clock_out_relative} "
+                            f"(**{utils.format_timedelta(ci.duration)}**)"
+                        )
             embed.add_field(
                 name="Clock Ins",
                 value="\n".join(field_line_list),
@@ -156,7 +165,7 @@ class InformationCommands(vbu.Cog[vbu.Bot]):
                 # Get the total duration for the day
                 total_duration = reduce(
                     lambda x, y: x + y,
-                    [i.duration for i in clockins],
+                    [i.duration_with_negative for i in clockins],
                 )
 
                 # Add the duration to the dict

@@ -1,4 +1,5 @@
-from datetime import datetime as dt
+import re
+from datetime import datetime as dt, timedelta
 
 import discord
 from discord.ext import vbu, commands
@@ -247,6 +248,92 @@ class UserCommands(vbu.Cog[vbu.Bot]):
                 f"You've clocked out of the mask **{mask}**. Your duration "
                 f"for this session is "
                 f"**{utils.format_timedelta(clock_in.duration)}**."
+            ),
+            ephemeral=True,
+        )
+
+    @clockother.command(
+        name="duration",
+        application_command_meta=commands.ApplicationCommandMeta(
+            options=[
+                discord.ApplicationCommandOption(
+                    name="user",
+                    description="The user you want to manage.",
+                    type=discord.ApplicationCommandOptionType.user,
+                    required=True,
+                ),
+                discord.ApplicationCommandOption(
+                    name="mask",
+                    description="The mask to use for the clock.",
+                    type=discord.ApplicationCommandOptionType.string,
+                    required=True,
+                    autocomplete=True,
+                ),
+                discord.ApplicationCommandOption(
+                    name="duration",
+                    description="The duration to clock the user for.",
+                    type=discord.ApplicationCommandOptionType.string,
+                    required=True,
+                ),
+            ],
+        ),
+    )
+    async def clockother_duration(
+            self,
+            ctx: utils.types.GuildSlashContext,
+            user: discord.Member,
+            mask: str,
+            duration: str):
+        """
+        Clocks out of one of your clocked in masks.
+        """
+
+        # Build a timedelta from what the user said
+        duration_group = re.search(
+            (
+                r"(?:(?P<negative>-)?)\s*"
+                r"(?:(?P<days>\d+?)d)?\s*"
+                r"(?:(?P<hours>\d+?)h)?\s*"
+                r"(?:(?P<minutes>\d+?)m)?\s*"
+                r"(?:(?P<seconds>\d+?)s)?"
+            ),
+            duration,
+            re.IGNORECASE,
+        )
+        if not duration_group:
+            return await ctx.interaction.response.send_message(
+                "Invalid duration format.",
+                ephemeral=True,
+            )
+
+        # Build a timedelta
+        duration_delta = timedelta(
+            days=int(duration_group.group("days") or 0),
+            hours=int(duration_group.group("hours") or 0),
+            minutes=int(duration_group.group("minutes") or 0),
+            seconds=int(duration_group.group("seconds") or 0),
+        )
+        if duration_group.group("negative"):
+            duration_delta = -duration_delta
+
+        # Open a database connection
+        start = dt(2000, 1, 1)
+        async with vbu.Database() as db:
+            assert ctx.interaction.guild_id
+            await utils.ClockIn(
+                None,
+                ctx.interaction.guild_id,
+                user.id,
+                mask,
+                start,
+                start + duration_delta,
+            ).update(db)
+
+        # Tell them we're done
+        await ctx.interaction.response.send_message(
+            (
+                f"You've clocked out of the mask **{mask}**. Your duration "
+                f"for this session is **{utils.format_timedelta(duration_delta)}**."
             ),
             ephemeral=True,
         )

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Optional, Self
-from datetime import datetime as dt, timedelta
+from datetime import datetime as dt, timedelta, date
 import uuid
+
+import discord
 
 if TYPE_CHECKING:
     from discord.ext import vbu
@@ -14,6 +16,15 @@ __all__ = (
 
 
 class ClockIn:
+
+    __slots__ = (
+        '_id',
+        'guild_id',
+        'user_id',
+        'mask',
+        'clocked_in_at',
+        'clocked_out_at',
+    )
 
     def __init__(
             self,
@@ -31,6 +42,16 @@ class ClockIn:
         self.clocked_out_at: Optional[dt] = clocked_out_at
 
     @property
+    def clock_in_relative(self) -> str:
+        return discord.utils.format_dt(self.clocked_in_at, style="f")
+
+    @property
+    def clock_out_relative(self) -> str:
+        if self.clocked_out_at is None:
+            raise ValueError()
+        return discord.utils.format_dt(self.clocked_out_at, style="f")
+
+    @property
     def id(self) -> str:
         if self._id is None:
             self._id = uuid.uuid4()
@@ -43,7 +64,17 @@ class ClockIn:
         self._id = value
 
     @property
+    def managed(self):
+        return self.clocked_in_at.date() == date(2000, 1, 1)
+
+    @property
     def duration(self) -> timedelta:
+        if self.clocked_out_at:
+            return self.clocked_out_at - self.clocked_in_at
+        return dt.utcnow() - self.clocked_in_at
+
+    @property
+    def duration_with_negative(self) -> timedelta:
         if self.clocked_out_at:
             return self.clocked_out_at - self.clocked_in_at
         return dt.utcnow() - self.clocked_in_at

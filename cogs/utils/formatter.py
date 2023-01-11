@@ -26,14 +26,18 @@ def format_timedelta(td: timedelta) -> str:
     # Format the string
     string = ""
     if days:
-        string += f"{days} day{'s' if days != 1 else ''}, "
+        string += f"{abs(days)} day{'s' if days != 1 else ''}, "
     if hours:
-        string += f"{hours} hour{'s' if hours != 1 else ''}, "
+        string += f"{abs(hours)} hour{'s' if hours != 1 else ''}, "
     if minutes:
-        string += f"{minutes} minute{'s' if minutes != 1 else ''}, "
+        string += f"{abs(minutes)} minute{'s' if minutes != 1 else ''}, "
     if seconds:
-        string += f"{seconds} second{'s' if seconds != 1 else ''}, "
+        string += f"{abs(seconds)} second{'s' if seconds != 1 else ''}, "
     string = string[:-2]
+
+    # Add negative time
+    if td < timedelta(0):
+        string = f"negative {string}"
 
     # Return the string
     return string
