@@ -40,8 +40,8 @@ It is currently in development.
     - [x] Clock the user in.
 - [x] clockother out [user] [role]
     - [x] Clock the user out.
-- [ ] clockother remove [user] [role] [duration]
-    - [ ] Remove a duration of time from the given user.
+- [x] clockother remove [user] [role] [duration]
+    - [x] Remove a duration of time from the given user.
 
 - [x] settings masks list
     - [x] Show a list of masks that are currently set up
