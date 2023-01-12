@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional, Self
+from typing import TYPE_CHECKING, Optional
+from typing_extensions import Self
 from datetime import datetime as dt, timedelta, date
 import uuid
 
