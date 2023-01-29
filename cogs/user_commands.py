@@ -30,7 +30,7 @@ class UserCommands(vbu.Cog[vbu.Bot]):
                 role_id = ANY($2::BIGINT[])
             """,
             user.guild.id,
-            user.role_ids,
+            user.role_ids + [user.guild.default_role.id],
         )
 
         # Return the masks
