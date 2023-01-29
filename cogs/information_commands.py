@@ -217,7 +217,7 @@ class InformationCommands(vbu.Cog[vbu.Bot]):
                     clock_ins
                 WHERE
                     guild_id = $1
-                    AND clocked_out_at IS NOT NULL
+                    AND clock_out IS NOT NULL
                 """,
                 ctx.interaction.guild_id,
             )
