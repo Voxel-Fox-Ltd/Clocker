@@ -138,7 +138,7 @@ class UserCommands(vbu.Cog[vbu.Bot]):
         """
 
         # Defer because apparently this takes time :/
-        await ctx.interaction.response.defer(ephemeral=True)
+        await ctx.interaction.response.defer()
 
         # Open a db connection
         async with vbu.Database() as db:
@@ -159,14 +159,12 @@ class UserCommands(vbu.Cog[vbu.Bot]):
             if clock_in:
                 return await ctx.interaction.followup.send(
                     "You're already clocked in with that mask.",
-                    ephemeral=True,
                 )
 
             # See if they're allowed to use that mask
             if mask not in allowed_masks:
                 return await ctx.interaction.followup.send(
                     "You don't have permission to use that mask.",
-                    ephemeral=True,
                 )
 
             # Create a new clock in
@@ -183,7 +181,6 @@ class UserCommands(vbu.Cog[vbu.Bot]):
         # Send a message
         await ctx.interaction.followup.send(
             f"You've clocked in with the mask `{mask}`.",
-            ephemeral=True,
         )
 
     @clockother.command(
@@ -216,7 +213,7 @@ class UserCommands(vbu.Cog[vbu.Bot]):
         """
 
         # Defer so we can have a nice loading message
-        await ctx.interaction.response.defer(ephemeral=True)
+        await ctx.interaction.response.defer()
 
         # Open a database connection
         async with vbu.Database() as db:
@@ -233,7 +230,6 @@ class UserCommands(vbu.Cog[vbu.Bot]):
             if not clock_in:
                 return await ctx.interaction.followup.send(
                     "You're not clocked in with that mask.",
-                    ephemeral=True,
                 )
 
             # Otherwise, clock them out
@@ -249,7 +245,6 @@ class UserCommands(vbu.Cog[vbu.Bot]):
                 f"for this session is "
                 f"**{utils.format_timedelta(clock_in.duration)}**."
             ),
-            ephemeral=True,
         )
 
     @clockother.command(
@@ -303,7 +298,6 @@ class UserCommands(vbu.Cog[vbu.Bot]):
         if not duration_group:
             return await ctx.interaction.response.send_message(
                 "Invalid duration format.",
-                ephemeral=True,
             )
 
         # Build a timedelta
@@ -335,7 +329,6 @@ class UserCommands(vbu.Cog[vbu.Bot]):
                 f"You've clocked out of the mask **{mask}**. Your duration "
                 f"for this session is **{utils.format_timedelta(duration_delta)}**."
             ),
-            ephemeral=True,
         )
 
     @clockother_in.autocomplete

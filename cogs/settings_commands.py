@@ -71,9 +71,8 @@ class SettingsCommands(vbu.Cog[vbu.Bot]):
 
         # Make sure the mask is valid
         if not self.validate_mask_name(mask):
-            return await ctx.send(
+            return await ctx.interaction.response.send_message(
                 "That mask name is not a valid identifier.",
-                ephemeral=True,
             )
 
         # Add the mask to the guild
@@ -100,7 +99,6 @@ class SettingsCommands(vbu.Cog[vbu.Bot]):
             except asyncpg.exceptions.UniqueViolationError:
                 await ctx.interaction.response.send_message(
                     "That mask already exists in your server.",
-                    ephemeral=True,
                 )
                 return
 
