@@ -340,6 +340,7 @@ class UserCommands(vbu.Cog[vbu.Bot]):
 
     @clockother_in.autocomplete
     @clock_in.autocomplete
+    @clockother_duration.autocomplete
     async def clock_in_autocomplete(
             self,
             ctx: utils.types.GuildSlashContext,
